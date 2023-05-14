@@ -14,8 +14,8 @@ RUN wget -O /workspace/stable-diffusion-webui/models/ControlNet/control_v11p_sd1
 
 
 RUN mkdir -p /workspace/stable-diffusion-webui/extensions
-WORKDIR /workspace/stable-diffusion-webui/extensions
-RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git .
+
+RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git /workspace/stable-diffusion-webui/extensions
 
 WORKDIR /
 
