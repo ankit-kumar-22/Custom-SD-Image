@@ -13,8 +13,6 @@ RUN mkdir -p /workspace/stable-diffusion-webui/models/ControlNet
 RUN wget -O /workspace/stable-diffusion-webui/models/ControlNet/control_v11p_sd15_canny.pth "https://huggingface.co/Ryukz/Custom-SD-File-Requirements/resolve/main/control_v11p_sd15_canny.pth"
 
 
-RUN mkdir -p /workspace/stable-diffusion-webui/extensions
-
 RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git /workspace/stable-diffusion-webui/extensions
 
 WORKDIR /
