@@ -7,7 +7,7 @@ def save_base64_image(json_file):
         data = json.load(file)
 
     # Extract the base64-encoded image from the JSON data
-    base64_image = data['output']['images'][0]
+    base64_image = data['output']['images'][1]
 
     # Decode the base64 image data
     image_data = base64.b64decode(base64_image)
@@ -16,7 +16,7 @@ def save_base64_image(json_file):
     file_extension = '.png'
 
     # Save the image file
-    with open('saved_image_1' + file_extension, 'wb') as file:
+    with open('saved_image_2' + file_extension, 'wb') as file:
         file.write(image_data)
 
     print('Image saved successfully.')

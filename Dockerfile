@@ -21,6 +21,8 @@ WORKDIR /
 
 RUN pip install -U xformers
 RUN pip install runpod
+RUN pip install azure-storage-blob
+RUN pip install azure-core
 
 
 ADD handler.py .
