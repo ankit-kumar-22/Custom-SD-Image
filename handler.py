@@ -25,13 +25,16 @@ def handler(event):
     print('got event')
     print(event)
 
-    response = requests.post(url=f'http://127.0.0.1:3000/sdapi/v1/img2img', json=event["input"])
+    
+    try:
+        response = requests.post(url=f'http://127.0.0.1:3000/sdapi/v1/img2img', json=event["input"])
 
-    json = response.json()
+        json = response.json()
     # do the things
 
-    print(json)
-
+        print(json)
+    except Exception:
+        return {"error":json}
     # return the output that you want to be returned like pre-signed URLs to output artifacts
     return json
 
