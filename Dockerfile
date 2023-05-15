@@ -5,6 +5,7 @@ SHELL ["/bin/bash", "-c"]
 ENV PATH="${PATH}:/workspace/stable-diffusion-webui/venv/bin"
 
 WORKDIR /
+COPY config_v1.json /workspace/stable-diffusion-webui/
 
 # RUN wget -O model.safetensors https://civitai.com/api/download/models/5616
 RUN wget -O /workspace/stable-diffusion-webui/models/Stable-diffusion/Realistic_Vision_V2.0-inpainting-fp16-no-ema.safetensors "https://huggingface.co/Ryukz/Custom-SD-Image/resolve/main/Realistic_Vision_V2.0-inpainting-fp16-no-ema.safetensors"

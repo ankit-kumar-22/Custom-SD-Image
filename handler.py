@@ -35,24 +35,4 @@ def handler(event):
     # return the output that you want to be returned like pre-signed URLs to output artifacts
     return json
 
-
-def change_settings(event):
-    '''
-    This is the handler function that will be called by the serverless.
-    '''
-    print('got event')
-    print(event)
-
-    response = requests.post(url=f'http://127.0.0.1:3000/sdapi/v1/options', json=event["input"])
-
-    json = response.json()
-    # do the things
-
-    print(json)
-
-    # return the output that you want to be returned like pre-signed URLs to output artifacts
-    return json
-
-
 runpod.serverless.start({"handler": handler})
-runpod.serverless.start({"handler": change_settings})
