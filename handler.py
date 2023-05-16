@@ -51,31 +51,26 @@ def handler(event):
         print(json)
     except Exception:
         return {"error":json}
-    # return the output that you want to be returned like pre-signed URLs to output artifacts
-    # upload_image_to_container(json["output"]["images"][0],fileName)
     blob_service_client = BlobServiceClient.from_connection_string(
         CONNECTION_STRING)
-
-    try:
-            container_client = blob_service_client.create_container(
+    container_client = blob_service_client.create_container(
             CONTAINER_NAME, public_access=None)
-            print(
+    print(
             f"Container '{CONTAINER_NAME}' created successfully with private access.")
-    except ResourceExistsError:
-        blob_client = container_client.get_blob_client(fileName)
+    blob_client = container_client.get_blob_client(fileName)
 
         # Convert the JSON data to a string
-        json_str = json.dumps(json)
+    json_str = json.dumps(json)
 
         # Convert the string to BytesIO object
-        file_obj = BytesIO(json_str.encode())
+    file_obj = BytesIO(json_str.encode())
 
-        file_obj.seek(0)  # Ensure the file object is at the beginning
-        blob_client.upload_blob(file_obj, overwrite=True)
-        print(
+    file_obj.seek(0)  # Ensure the file object is at the beginning
+    blob_client.upload_blob(file_obj, overwrite=True)
+    print(
         f"File '{fileName}' uploaded to container '{container_client.container_name}'.")
 
-        file_obj.seek(0)
+    file_obj.seek(0)
         
     return json
 
