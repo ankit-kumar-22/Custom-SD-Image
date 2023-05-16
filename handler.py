@@ -73,7 +73,7 @@ def handler(event):
 
     file_obj.seek(0)
         
-    return json
+    return {"refresh_worker": True, "job_results": json_response}
 
 runpod.serverless.start({"handler": handler})
 
