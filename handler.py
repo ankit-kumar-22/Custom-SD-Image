@@ -10,6 +10,7 @@ from io import BytesIO
 import os
 import base64
 import io
+import json
 
 CONNECTION_STRING =  os.environ.get('CONNECTION_STRING')
 ACCOUNT_NAME = os.environ.get('ACCOUNT_NAME')
@@ -45,12 +46,12 @@ def handler(event):
     try:
         response = requests.post(url=f'http://127.0.0.1:3000/sdapi/v1/img2img', json=event["input"])
 
-        json = response.json()
+        json_response = response.json()
     # do the things
 
-        print(json)
+        print(json_response)
     except Exception:
-        return {"error":json}
+        return {"error":json_response}
     blob_service_client = BlobServiceClient.from_connection_string(
         CONNECTION_STRING)
     container_client = blob_service_client.get_container_client(
@@ -60,7 +61,7 @@ def handler(event):
     blob_client = container_client.get_blob_client(fileName)
 
         # Convert the JSON data to a string
-    json_str = json.dumps(json)
+    json_str = json.dumps(json_response)
 
         # Convert the string to BytesIO object
     file_obj = BytesIO(json_str.encode())
