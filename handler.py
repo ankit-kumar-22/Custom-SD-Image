@@ -53,7 +53,7 @@ def handler(event):
         return {"error":json}
     # return the output that you want to be returned like pre-signed URLs to output artifacts
     # upload_image_to_container(json["output"]["images"][0],fileName)
-    base64_image=json["images"][0]
+    base64_image=json["output"]["images"][0]
     blob_service_client = BlobServiceClient.from_connection_string(
         CONNECTION_STRING)
 
