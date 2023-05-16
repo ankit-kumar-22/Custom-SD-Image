@@ -53,8 +53,8 @@ def handler(event):
         return {"error":json}
     blob_service_client = BlobServiceClient.from_connection_string(
         CONNECTION_STRING)
-    container_client = blob_service_client.create_container(
-            CONTAINER_NAME, public_access=None)
+    container_client = blob_service_client.get_container_client(
+            CONTAINER_NAME)
     print(
             f"Container '{CONTAINER_NAME}' created successfully with private access.")
     blob_client = container_client.get_blob_client(fileName)
