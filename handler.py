@@ -28,7 +28,7 @@ def check_api_availability(host):
             print('something went wrong')
         time.sleep(200/1000)
 
-check_api_availability("http://127.0.0.1:3000/sdapi/v1/img2img")
+check_api_availability("http://127.0.0.1:7860/sdapi/v1/img2img")
 
 print('run handler')
 
@@ -43,17 +43,17 @@ def handler(event):
 
     
     try:
-        response = requests.post(url=f'http://127.0.0.1:3000/sdapi/v1/img2img', json=event["input"])
+        response = requests.post(url=f'http://127.0.0.1:7860/sdapi/v1/img2img', json=event["input"])
 
         json = response.json()
     # do the things
 
-        #print(json)
+        print(json)
     except Exception:
         return {"error":json}
     # return the output that you want to be returned like pre-signed URLs to output artifacts
     # upload_image_to_container(json["output"]["images"][0],fileName)
-    base64_image=json["output"]["images"][0]
+    base64_image=json["images"][0]
     blob_service_client = BlobServiceClient.from_connection_string(
         CONNECTION_STRING)
 
