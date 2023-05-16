@@ -37,7 +37,7 @@ def handler(event):
     This is the handler function that will be called by the serverless.
     '''
     print('got event')
-    print(event)
+    #print(event)
 
     fileName=event["input"]["filename"]
 
@@ -48,45 +48,39 @@ def handler(event):
         json = response.json()
     # do the things
 
-        print(json)
+        #print(json)
     except Exception:
         return {"error":json}
     # return the output that you want to be returned like pre-signed URLs to output artifacts
-    upload_image_to_container(json["output"]["images"][0],fileName)
+    # upload_image_to_container(json["output"]["images"][0],fileName)
+    base64_image=json["output"]["images"][0]
+    blob_service_client = BlobServiceClient.from_connection_string(
+        CONNECTION_STRING)
+
+    try:
+            container_client = blob_service_client.create_container(
+            CONTAINER_NAME, public_access=None)
+            print(
+            f"Container '{CONTAINER_NAME}' created successfully with private access.")
+    except ResourceExistsError:
+        container_client = blob_service_client.get_container_client(
+            CONTAINER_NAME)
+        container_client.set_container_access_policy(
+            signed_identifiers={}, public_access=None)
+        print(
+            f"Container '{CONTAINER_NAME}' already exists and is now set to private access.")
+        blob_client = container_client.get_blob_client(fileName)
+
+        image_bytes = base64.b64decode(base64_image)
+        image_obj = io.BytesIO(image_bytes)
+
+        image_obj.seek(0)  # Ensure the file object is at the beginning
+        blob_client.upload_blob(image_obj, overwrite=True)
+        print(f"Image '{fileName}' uploaded to container '{container_client.container_name}'.")
+        image_obj.seek(0)
+        
     return json
 
 runpod.serverless.start({"handler": handler})
 
 
-def create_container(container_name):
-    blob_service_client = BlobServiceClient.from_connection_string(
-        CONNECTION_STRING)
-
-    try:
-        container_client = blob_service_client.create_container(
-            container_name, public_access=None)
-        print(
-            f"Container '{container_name}' created successfully with private access.")
-    except ResourceExistsError:
-        container_client = blob_service_client.get_container_client(
-            container_name)
-        container_client.set_container_access_policy(
-            signed_identifiers={}, public_access=None)
-        print(
-            f"Container '{container_name}' already exists and is now set to private access.")
-
-    return container_client
-
-
-
-def upload_image_to_container(image_str, file_name):
-    container_client = create_container(CONTAINER_NAME)
-    blob_client = container_client.get_blob_client(file_name)
-
-    image_bytes = base64.b64decode(image_str)
-    image_obj = io.BytesIO(image_bytes)
-
-    image_obj.seek(0)  # Ensure the file object is at the beginning
-    blob_client.upload_blob(image_obj, overwrite=True)
-    print(f"Image '{file_name}' uploaded to container '{container_client.container_name}'.")
-    image_obj.seek(0)
