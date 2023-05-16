@@ -53,7 +53,6 @@ def handler(event):
         return {"error":json}
     # return the output that you want to be returned like pre-signed URLs to output artifacts
     # upload_image_to_container(json["output"]["images"][0],fileName)
-    base64_image=json["output"]["images"][0]
     blob_service_client = BlobServiceClient.from_connection_string(
         CONNECTION_STRING)
 
@@ -63,21 +62,20 @@ def handler(event):
             print(
             f"Container '{CONTAINER_NAME}' created successfully with private access.")
     except ResourceExistsError:
-        container_client = blob_service_client.get_container_client(
-            CONTAINER_NAME)
-        container_client.set_container_access_policy(
-            signed_identifiers={}, public_access=None)
-        print(
-            f"Container '{CONTAINER_NAME}' already exists and is now set to private access.")
         blob_client = container_client.get_blob_client(fileName)
 
-        image_bytes = base64.b64decode(base64_image)
-        image_obj = io.BytesIO(image_bytes)
+        # Convert the JSON data to a string
+        json_str = json.dumps(json)
 
-        image_obj.seek(0)  # Ensure the file object is at the beginning
-        blob_client.upload_blob(image_obj, overwrite=True)
-        print(f"Image '{fileName}' uploaded to container '{container_client.container_name}'.")
-        image_obj.seek(0)
+        # Convert the string to BytesIO object
+        file_obj = BytesIO(json_str.encode())
+
+        file_obj.seek(0)  # Ensure the file object is at the beginning
+        blob_client.upload_blob(file_obj, overwrite=True)
+        print(
+        f"File '{fileName}' uploaded to container '{container_client.container_name}'.")
+
+        file_obj.seek(0)
         
     return json
 
