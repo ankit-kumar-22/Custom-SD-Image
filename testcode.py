@@ -8,7 +8,7 @@ def get_fn_index():
             headless=True, args=["--start-maximized"])
         context = browser.new_context(no_viewport=True)
         page = context.new_page()
-        page.goto("http://127.0.0.1:7860/")
+        page.goto("http://127.0.0.1:3000/")
         page.get_by_role("button", name="img2img", exact=True).click()
         page.get_by_role("button", name="Inpaint upload").click()
         page.wait_for_timeout(1000)
