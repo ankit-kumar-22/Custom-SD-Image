@@ -12,7 +12,7 @@ def get_fn_index():
         page.get_by_role("button", name="img2img", exact=True).click()
         page.get_by_role("button", name="Inpaint upload").click()
         page.wait_for_timeout(1000)
-        with page.expect_request("**/predict") as request:
+        with page.expect_request("**/predict/") as request:
             page.get_by_role("button", name="Generate").click()
         post_data_json = json.loads(request.value.post_data)
         fn_index = post_data_json['fn_index']
