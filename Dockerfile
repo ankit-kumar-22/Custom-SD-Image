@@ -17,12 +17,19 @@ RUN wget -O /workspace/stable-diffusion-webui/models/ControlNet/control_v11p_sd1
 WORKDIR /workspace/stable-diffusion-webui/extensions
 RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git 
 
-WORKDIR /
 
+WORKDIR /workspace/stable-diffusion-webui
+RUN git reset --hard a9eab236d7e8afa4d6205127904a385b2c43bb24
+
+
+
+WORKDIR /
 RUN pip install -U xformers
 RUN pip install runpod
 RUN pip install azure-storage-blob
 RUN pip install azure-core
+RUN pip install playwright
+RUN pip install pytest-playwright
 
 
 ADD handler.py .

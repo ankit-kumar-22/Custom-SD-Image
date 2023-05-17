@@ -1,18 +1,16 @@
 import runpod
-import subprocess
 import requests
 import time
-from typing import List
-from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient, generate_blob_sas, AccountSasPermissions, ResourceTypes
-from azure.core.exceptions import ResourceExistsError
-from datetime import datetime, timedelta
+from azure.storage.blob import BlobServiceClient
 from io import BytesIO
 import os
 import base64
 import io
 import json
+from playwright.sync_api import Playwright, sync_playwright
 
-CONNECTION_STRING =  os.environ.get('CONNECTION_STRING')
+
+CONNECTION_STRING = os.environ.get('CONNECTION_STRING')
 ACCOUNT_NAME = os.environ.get('ACCOUNT_NAME')
 ACCOUNT_KEY = os.environ.get('ACCOUNT_KEY')
 CONTAINER_NAME = os.environ.get('CONTAINER_NAME')
@@ -24,57 +22,77 @@ def check_api_availability(host):
             response = requests.get(host)
             return
         except requests.exceptions.RequestException as e:
-            print(f"API is not available, retrying in 200ms... ({e})")
+            print(f"API is not available, retrying in 4s... ({e})")
         except Exception as e:
             print('something went wrong')
-        time.sleep(200/1000)
+        time.sleep(4)
 
-check_api_availability("http://127.0.0.1:3000/sdapi/v1/img2img")
+
+check_api_availability("http://127.0.0.1:3000/run/predict")
 
 print('run handler')
+
 
 def handler(event):
     '''
     This is the handler function that will be called by the serverless.
     '''
     print('got event')
-    #print(event)
+    # print(event)
 
-    fileName=event["input"]["filename"]
+    def get_fn_index():
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(
+                headless=True, args=["--start-maximized"])
+            context = browser.new_context(no_viewport=True)
+            page = context.new_page()
+            page.goto("http://127.0.0.1:3000/")
+            page.get_by_role("button", name="img2img", exact=True).click()
+            page.get_by_role("button", name="Inpaint upload").click()
+            page.wait_for_timeout(1000)
+            with page.expect_request("**/predict") as request:
+                page.get_by_role("button", name="Generate").click()
+            post_data_json = json.loads(request.value.post_data)
+            fn_index = post_data_json['fn_index']
+            context.close()
+            browser.close()
+        return fn_index
 
-    
-    try:
-        response = requests.post(url=f'http://127.0.0.1:3000/sdapi/v1/img2img', json=event["input"])
+    def save_data(response_to_save):
 
-        json_response = response.json()
-    # do the things
-
-        print(json_response)
-    except Exception:
-        return {"error":json_response}
-    blob_service_client = BlobServiceClient.from_connection_string(
-        CONNECTION_STRING)
-    container_client = blob_service_client.get_container_client(
+        blob_service_client = BlobServiceClient.from_connection_string(
+            CONNECTION_STRING)
+        container_client = blob_service_client.get_container_client(
             CONTAINER_NAME)
-    print(
+        print(
             f"Container '{CONTAINER_NAME}' created successfully with private access.")
-    blob_client = container_client.get_blob_client(fileName)
+        blob_client = container_client.get_blob_client(fileName)
+        json_str = json.dumps(response_to_save)
+        file_obj = BytesIO(json_str.encode())
 
-        # Convert the JSON data to a string
-    json_str = json.dumps(json_response)
+        file_obj.seek(0)  # Ensure the file object is at the beginning
+        blob_client.upload_blob(file_obj, overwrite=True)
+        print(
+            f"File '{fileName}' uploaded to container '{container_client.container_name}'.")
+        file_obj.seek(0)
 
-        # Convert the string to BytesIO object
-    file_obj = BytesIO(json_str.encode())
+    fileName = event["input"]["filename"]
+    fn_index_flag = event["input"]["fn_index"]
 
-    file_obj.seek(0)  # Ensure the file object is at the beginning
-    blob_client.upload_blob(file_obj, overwrite=True)
-    print(
-        f"File '{fileName}' uploaded to container '{container_client.container_name}'.")
+    if (fn_index_flag == True):
+        fn_index = get_fn_index()
+        return {"refresh_worker": True, "fn_index": fn_index}
+    else:
+        try:
+            response = requests.post(
+                url=f'http://127.0.0.1:3000/run/predict', json=event["input"])
 
-    file_obj.seek(0)
-        
-    return {"refresh_worker": True, "job_results": json_response}
+            json_response = response.json()
+            save_data(json_response)
+        except Exception:
+            return {"error": json_response}
+
+    return {"refresh_worker": True, "data": json_response}
+
 
 runpod.serverless.start({"handler": handler})
-
-
