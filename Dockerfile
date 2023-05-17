@@ -1,4 +1,4 @@
-FROM runpod/stable-diffusion:web-automatic-base-5.0.0
+FROM runpod/stable-diffusion:web-automatic-base-6.0.0
 
 SHELL ["/bin/bash", "-c"]
 
@@ -24,6 +24,7 @@ RUN git reset --hard a9eab236d7e8afa4d6205127904a385b2c43bb24
 
 
 WORKDIR /
+RUN pip install gradio==3.23
 RUN pip install -U xformers
 RUN pip install runpod
 RUN pip install azure-storage-blob

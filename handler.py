@@ -28,7 +28,7 @@ def check_api_availability(host):
         time.sleep(4)
 
 
-check_api_availability("http://127.0.0.1:3000/run/predict")
+check_api_availability("http://127.0.0.1:3000/run/predict/")
 
 print('run handler')
 
@@ -85,7 +85,7 @@ def handler(event):
     else:
         try:
             response = requests.post(
-                url=f'http://127.0.0.1:3000/run/predict', json=event["input"])
+                url=f'http://127.0.0.1:3000/run/predict/', json=event["input"])
 
             json_response = response.json()
             save_data(json_response)
