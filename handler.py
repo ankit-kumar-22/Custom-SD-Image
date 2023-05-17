@@ -28,7 +28,7 @@ def check_api_availability(host):
         time.sleep(4)
 
 
-check_api_availability("http://127.0.0.1:3000/run/predict/")
+check_api_availability("http://127.0.0.1:3000/sdapi/v1/options")
 
 print('run handler')
 
