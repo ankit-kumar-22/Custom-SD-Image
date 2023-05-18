@@ -1,15 +1,32 @@
 from io import BytesIO
+import time
 from playwright.async_api import Playwright, async_playwright
 import asyncio
 import json
 import os
 from azure.storage.blob import BlobServiceClient
-
+import requests
 
 CONNECTION_STRING = os.environ.get('CONNECTION_STRING')
 ACCOUNT_NAME = os.environ.get('ACCOUNT_NAME')
 ACCOUNT_KEY = os.environ.get('ACCOUNT_KEY')
 CONTAINER_NAME = os.environ.get('CONTAINER_NAME')
+
+
+def check_api_availability(host):
+    while True:
+        try:
+            response = requests.get(host)
+            return
+        except requests.exceptions.RequestException as e:
+            print(f"API is not available, retrying in 4s... ({e})")
+        except Exception as e:
+            print('something went wrong')
+        time.sleep(4)
+
+
+time.sleep(3)
+check_api_availability("http://127.0.0.1:3000/sdapi/v1/options")
 
 
 async def get_fn_index():
