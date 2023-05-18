@@ -12,10 +12,10 @@ from playwright.sync_api import Playwright, sync_playwright
 from playwright.async_api import Playwright, async_playwright
 
 
-CONNECTION_STRING = os.environ.get('CONNECTION_STRING')
-ACCOUNT_NAME = os.environ.get('ACCOUNT_NAME')
-ACCOUNT_KEY = os.environ.get('ACCOUNT_KEY')
-CONTAINER_NAME = os.environ.get('CONTAINER_NAME')
+CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=images22494;AccountKey=7WdotRdDr0HKZa8mvFwcoQCw3k0/htrnxvVHoBs+IGa/z+/FiyRaxxwwglu8BDriMWc4/S8zUHbz+AStAPvnSQ==;EndpointSuffix=core.windows.net"
+ACCOUNT_NAME = 'images22494'
+ACCOUNT_KEY = '7WdotRdDr0HKZa8mvFwcoQCw3k0/htrnxvVHoBs+IGa/z+/FiyRaxxwwglu8BDriMWc4/S8zUHbz+AStAPvnSQ=='
+CONTAINER_NAME = 'user-images'
 
 
 def check_api_availability(host):
@@ -36,23 +36,26 @@ check_api_availability("http://127.0.0.1:3000/sdapi/v1/options")
 print('run handler')
 
 
-async def get_fn_index():
-    async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch(headless=True, args=["--start-maximized"])
-        context = await browser.new_context(no_viewport=True)
-        page = await context.new_page()
-        await page.goto("http://127.0.0.1:3000/")
-        await page.get_by_role("button", name="img2img", exact=True).click()
-        await page.get_by_role("button", name="Inpaint upload").click()
-        await asyncio.sleep(1)
-        async with page.expect_request("**/predict/") as request_info:
-            await page.get_by_role("button", name="Generate").click()
-        request = await request_info.value
+def get_fn_index():
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(
+            headless=True, args=["--start-maximized"])
+        context = browser.new_context(no_viewport=True)
+        page = context.new_page()
+        page.goto("http://127.0.0.1:3000/")
+        page.get_by_role("button", name="img2img", exact=True).click()
+        page.get_by_role("button", name="Inpaint upload").click()
+        import time
+        time.sleep(10)
+        with page.expect_request("**/predict/") as request_info:
+            page.get_by_role("button", name="Generate").click()
+        request = request_info.value
         request_body_json = json.loads(request.post_data)
         fn_index = request_body_json['fn_index']
-        await context.close()
-        await browser.close()
+        context.close()
+        browser.close()
         json_data = {'fn_index': fn_index}
+        print(json_data)
         save_fn_index(json_data, "fn_index.json")
     return fn_index
 
@@ -75,12 +78,11 @@ def save_fn_index(json_data, file_name):
     file_obj.seek(0)
 
 
-async def main():
-    result = await get_fn_index()
-    print(result)
+print('Calling fn index funtion')
 
+get_fn_index()
 
-asyncio.run(main())
+print('Completed!!!')
 
 
 def handler(event):
