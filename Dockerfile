@@ -31,6 +31,7 @@ RUN pip install azure-storage-blob
 RUN pip install azure-core
 RUN pip install playwright
 RUN pip install pytest-playwright
+RUN playwright install chromium
 
 
 ADD handler.py .
