@@ -19,10 +19,10 @@ def check_api_availability(host):
             response = requests.get(host)
             return
         except requests.exceptions.RequestException as e:
-            print(f"API is not available, retrying in 4s... ({e})")
+            print(f"API is not available, retrying in 1s... ({e})")
         except Exception as e:
             print('something went wrong')
-        time.sleep(4)
+        time.sleep(1)
 
 
 time.sleep(3)
