@@ -38,7 +38,7 @@ print('run handler')
 
 async def get_fn_index():
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch(headless=True, args=["--start-maximized"])
+        browser = await playwright.chromium.launch(headless=False, args=["--start-maximized"])
         context = await browser.new_context(no_viewport=True)
         page = await context.new_page()
         await page.goto("http://127.0.0.1:3000/")
