@@ -36,53 +36,53 @@ check_api_availability("http://127.0.0.1:3000/sdapi/v1/options")
 print('run handler')
 
 
-def get_fn_index():
-    with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(
-            headless=True, args=["--start-maximized"])
-        context = browser.new_context(no_viewport=True)
-        page = context.new_page()
-        page.goto("http://127.0.0.1:3000/")
-        page.get_by_role("button", name="img2img", exact=True).click()
-        page.get_by_role("button", name="Inpaint upload").click()
-        import time
-        time.sleep(10)
-        with page.expect_request("**/predict/") as request_info:
-            page.get_by_role("button", name="Generate").click()
-        request = request_info.value
-        request_body_json = json.loads(request.post_data)
-        fn_index = request_body_json['fn_index']
-        context.close()
-        browser.close()
-        json_data = {'fn_index': fn_index}
-        print(json_data)
-        save_fn_index(json_data, "fn_index.json")
-    return fn_index
+# def get_fn_index():
+#     with sync_playwright() as playwright:
+#         browser = playwright.chromium.launch(
+#             headless=True, args=["--start-maximized"])
+#         context = browser.new_context(no_viewport=True)
+#         page = context.new_page()
+#         page.goto("http://127.0.0.1:3000/")
+#         page.get_by_role("button", name="img2img", exact=True).click()
+#         page.get_by_role("button", name="Inpaint upload").click()
+#         import time
+#         time.sleep(10)
+#         with page.expect_request("**/predict/") as request_info:
+#             page.get_by_role("button", name="Generate").click()
+#         request = request_info.value
+#         request_body_json = json.loads(request.post_data)
+#         fn_index = request_body_json['fn_index']
+#         context.close()
+#         browser.close()
+#         json_data = {'fn_index': fn_index}
+#         print(json_data)
+#         save_fn_index(json_data, "fn_index.json")
+#     return fn_index
 
 
-def save_fn_index(json_data, file_name):
-    blob_service_client = BlobServiceClient.from_connection_string(
-        CONNECTION_STRING)
-    container_client = blob_service_client.get_container_client(
-        CONTAINER_NAME)
-    print(
-        f"Container '{CONTAINER_NAME}' created successfully with private access.")
-    blob_client = container_client.get_blob_client(file_name)
-    json_str = json.dumps(json_data)
-    file_obj = BytesIO(json_str.encode())
+# def save_fn_index(json_data, file_name):
+#     blob_service_client = BlobServiceClient.from_connection_string(
+#         CONNECTION_STRING)
+#     container_client = blob_service_client.get_container_client(
+#         CONTAINER_NAME)
+#     print(
+#         f"Container '{CONTAINER_NAME}' created successfully with private access.")
+#     blob_client = container_client.get_blob_client(file_name)
+#     json_str = json.dumps(json_data)
+#     file_obj = BytesIO(json_str.encode())
 
-    file_obj.seek(0)  # Ensure the file object is at the beginning
-    blob_client.upload_blob(file_obj, overwrite=True)
-    print(
-        f"File '{file_name}' uploaded to container '{container_client.container_name}'.")
-    file_obj.seek(0)
+#     file_obj.seek(0)  # Ensure the file object is at the beginning
+#     blob_client.upload_blob(file_obj, overwrite=True)
+#     print(
+#         f"File '{file_name}' uploaded to container '{container_client.container_name}'.")
+#     file_obj.seek(0)
 
 
-print('Calling fn index funtion')
+# print('Calling fn index funtion')
 
-get_fn_index()
+# get_fn_index()
 
-print('Completed!!!')
+# print('Completed!!!')
 
 
 def handler(event):
