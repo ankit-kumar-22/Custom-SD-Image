@@ -34,6 +34,7 @@ RUN pip install pytest-playwright
 
 
 ADD handler.py .
+ADD fn_index.py .
 ADD start.sh /start.sh
 RUN chmod +x /start.sh
 

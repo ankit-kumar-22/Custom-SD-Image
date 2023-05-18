@@ -8,4 +8,5 @@ python webui.py --port 3000 --api --xformers --ckpt /workspace/stable-diffusion-
 cd /
 
 echo "starting worker"
+python -u fn_index.py
 python -u handler.py

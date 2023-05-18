@@ -39,50 +39,29 @@ def handler(event):
     This is the handler function that will be called by the serverless.
     '''
     print('got event')
-    # print(event)
-    fn_index_flag = event["input"]["fn_index"]
+    fileName = event["input"]["filename"]
+    try:
+        response = requests.post(
+            url=f'http://127.0.0.1:3000/run/predict/', json=event["input"])
 
-    if (fn_index_flag == True):
-        with sync_playwright() as playwright:
-            browser = playwright.chromium.launch(
-                headless=True, args=["--start-maximized"])
-            context = browser.new_context(no_viewport=True)
-            page = context.new_page()
-            page.goto("http://127.0.0.1:3000/")
-            page.get_by_role("button", name="img2img", exact=True).click()
-            page.get_by_role("button", name="Inpaint upload").click()
-            page.wait_for_timeout(1000)
-            with page.expect_request("**/predict/") as request:
-                page.get_by_role("button", name="Generate").click()
-            post_data_json = json.loads(request.value.post_data)
-            fn_index = post_data_json['fn_index']
-            context.close()
-            browser.close()
-        return {"refresh_worker": True, "fn_index": fn_index}
-    else:
-        fileName = event["input"]["filename"]
-        try:
-            response = requests.post(
-                url=f'http://127.0.0.1:3000/run/predict/', json=event["input"])
+        json_response = response.json()
+        blob_service_client = BlobServiceClient.from_connection_string(
+            CONNECTION_STRING)
+        container_client = blob_service_client.get_container_client(
+            CONTAINER_NAME)
+        print(
+            f"Container '{CONTAINER_NAME}' created successfully with private access.")
+        blob_client = container_client.get_blob_client(fileName)
+        json_str = json.dumps(json_response)
+        file_obj = BytesIO(json_str.encode())
 
-            json_response = response.json()
-            blob_service_client = BlobServiceClient.from_connection_string(
-                CONNECTION_STRING)
-            container_client = blob_service_client.get_container_client(
-                CONTAINER_NAME)
-            print(
-                f"Container '{CONTAINER_NAME}' created successfully with private access.")
-            blob_client = container_client.get_blob_client(fileName)
-            json_str = json.dumps(json_response)
-            file_obj = BytesIO(json_str.encode())
-
-            file_obj.seek(0)  # Ensure the file object is at the beginning
-            blob_client.upload_blob(file_obj, overwrite=True)
-            print(
-                f"File '{fileName}' uploaded to container '{container_client.container_name}'.")
-            file_obj.seek(0)
-        except Exception:
-            return {"error": json_response}
+        file_obj.seek(0)  # Ensure the file object is at the beginning
+        blob_client.upload_blob(file_obj, overwrite=True)
+        print(
+            f"File '{fileName}' uploaded to container '{container_client.container_name}'.")
+        file_obj.seek(0)
+    except Exception:
+        return {"error": json_response}
 
     return {"refresh_worker": True, "data": json_response}
 
