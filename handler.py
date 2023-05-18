@@ -12,10 +12,10 @@ from playwright.sync_api import Playwright, sync_playwright
 from playwright.async_api import Playwright, async_playwright
 
 
-CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=images22494;AccountKey=7WdotRdDr0HKZa8mvFwcoQCw3k0/htrnxvVHoBs+IGa/z+/FiyRaxxwwglu8BDriMWc4/S8zUHbz+AStAPvnSQ==;EndpointSuffix=core.windows.net"
-ACCOUNT_NAME = 'images22494'
-ACCOUNT_KEY = '7WdotRdDr0HKZa8mvFwcoQCw3k0/htrnxvVHoBs+IGa/z+/FiyRaxxwwglu8BDriMWc4/S8zUHbz+AStAPvnSQ=='
-CONTAINER_NAME = 'user-images'
+CONNECTION_STRING = os.environ.get('CONNECTION_STRING')
+ACCOUNT_NAME = os.environ.get('ACCOUNT_NAME')
+ACCOUNT_KEY = os.environ.get('ACCOUNT_KEY')
+CONTAINER_NAME = os.environ.get('CONTAINER_NAME')
 
 
 def check_api_availability(host):
