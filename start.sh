@@ -7,7 +7,6 @@ echo "starting stable diffusion"
 python webui.py --port 3000 --api --xformers --ckpt /workspace/stable-diffusion-webui/models/Stable-diffusion/Realistic_Vision_V2.0-inpainting-fp16-no-ema.safetensors  --ui-settings-file /workspace/stable-diffusion-webui/config_v1.json &
 cd /
 
-sleep 3
 echo "starting worker"
 python fn_index.py
 python -u handler.py
