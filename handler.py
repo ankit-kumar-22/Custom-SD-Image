@@ -57,7 +57,7 @@ def handler(event):
             f"Container '{CONTAINER_NAME}' created successfully with private access.")
 
         # Extract images from the API response
-        images = json_response["output"]["data"]["images"]
+        images = json_response["data"]["images"]
 
         # Decode each image and upload it to Azure Blob Storage
         for index, image in enumerate(images, start=1):
