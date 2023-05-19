@@ -1,16 +1,19 @@
+import base64
 import runpod
 import requests
 import time
 from azure.storage.blob import BlobServiceClient
-from io import BytesIO
 import os
-import json
 
 
 CONNECTION_STRING = os.environ.get('CONNECTION_STRING')
 ACCOUNT_NAME = os.environ.get('ACCOUNT_NAME')
 ACCOUNT_KEY = os.environ.get('ACCOUNT_KEY')
 CONTAINER_NAME = os.environ.get('CONTAINER_NAME')
+BASE_URI = "http://127.0.0.1"
+PORT_NO = "3000"
+HEALTHCHECK_API_ENPOINT = "/sdapi/v1/options"
+IMG2IMG_API_ENPOINT = "/sdapi/v1/img2img"
 
 
 def check_api_availability(host):
@@ -26,7 +29,7 @@ def check_api_availability(host):
 
 
 time.sleep(3)
-check_api_availability("http://127.0.0.1:3000/sdapi/v1/options")
+check_api_availability(f"{BASE_URI}:{PORT_NO}{HEALTHCHECK_API_ENPOINT}")
 
 print('run handler')
 
@@ -36,31 +39,48 @@ def handler(event):
     This is the handler function that will be called by the serverless.
     '''
     print('got event')
-    fileName = event["input"]["filename"]
+    username = event["input"]["username"]
+
     try:
         response = requests.post(
-            url=f'http://127.0.0.1:3000/sdapi/v1/img2img', json=event["input"])
+            url=f"{BASE_URI}:{PORT_NO}{IMG2IMG_API_ENPOINT}", json=event["input"])
 
         json_response = response.json()
+
+        # Create a blob service client
         blob_service_client = BlobServiceClient.from_connection_string(
             CONNECTION_STRING)
         container_client = blob_service_client.get_container_client(
             CONTAINER_NAME)
+
         print(
             f"Container '{CONTAINER_NAME}' created successfully with private access.")
-        blob_client = container_client.get_blob_client(fileName)
-        json_str = json.dumps(json_response)
-        file_obj = BytesIO(json_str.encode())
 
-        file_obj.seek(0)  # Ensure the file object is at the beginning
-        blob_client.upload_blob(file_obj, overwrite=True)
-        print(
-            f"File '{fileName}' uploaded to container '{container_client.container_name}'.")
-        file_obj.seek(0)
-    except Exception:
-        return {"error": json_response}
+        # Extract images from the API response
+        images = json_response["output"]["data"]["images"]
 
-    return {"refresh_worker": True, "data": json_response}
+        # Decode each image and upload it to Azure Blob Storage
+        for index, image in enumerate(images, start=1):
+            # Decode the base64 image
+            img_data = base64.b64decode(image)
+
+            # Generate blob name
+            blob_name = f"SD_{username}_{index}.png"
+
+            # Get blob client
+            blob_client = container_client.get_blob_client(blob_name)
+
+            # Upload the image data to Azure Blob Storage
+            blob_client.upload_blob(img_data, overwrite=True)
+
+            print(
+                f"Image '{blob_name}' uploaded to container '{container_client.container_name}'.")
+
+    except Exception as e:
+        print(f"Exception: {e}")
+        return {"refresh_worker": True, "success": False, "message": str(e)}
+
+    return {"refresh_worker": True, "success": True, "message": "image generated sucessfully"}
 
 
 runpod.serverless.start({"handler": handler})
