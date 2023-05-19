@@ -57,7 +57,7 @@ def handler(event):
             f"Container '{CONTAINER_NAME}' created successfully with private access.")
 
         # Extract images from the API response
-        images = json_response["data"]["images"]
+        images = json_response["images"]
 
         # Decode each image and upload it to Azure Blob Storage
         for index, image in enumerate(images, start=1):
@@ -78,7 +78,7 @@ def handler(event):
 
     except Exception as e:
         print(f"Exception: {e}")
-        return {"refresh_worker": True, "success": False, "message": str(e)}
+        return {"refresh_worker": True, "success": False, "message": json_response}
 
     return {"refresh_worker": True, "success": True, "message": "image generated sucessfully"}
 
