@@ -1,4 +1,4 @@
-FROM runpod/stable-diffusion:web-automatic-base-6.0.0
+FROM runpod/stable-diffusion:web-automatic-base-7.0.0
 
 SHELL ["/bin/bash", "-c"]
 
@@ -7,8 +7,7 @@ ENV PATH="${PATH}:/workspace/stable-diffusion-webui/venv/bin"
 WORKDIR /
 COPY config_v1.json /workspace/stable-diffusion-webui/
 
-# RUN wget -O model.safetensors https://civitai.com/api/download/models/5616
-RUN wget -O /workspace/stable-diffusion-webui/models/Stable-diffusion/Realistic_Vision_V2.0-inpainting-fp16-no-ema.safetensors "https://huggingface.co/Ryukz/Custom-SD-Image/resolve/main/Realistic_Vision_V2.0-inpainting-fp16-no-ema.safetensors"
+RUN wget -O /workspace/stable-diffusion-webui/models/Stable-diffusion/Realistic_Vision_V2.0-inpainting.safetensors "https://huggingface.co/SG161222/Realistic_Vision_V2.0/resolve/main/Realistic_Vision_V2.0-inpainting.safetensors"
 
 RUN mkdir -p /workspace/stable-diffusion-webui/models/ControlNet
 RUN wget -O /workspace/stable-diffusion-webui/models/ControlNet/control_v11p_sd15_canny.pth "https://huggingface.co/Ryukz/Custom-SD-File-Requirements/resolve/main/control_v11p_sd15_canny.pth"
@@ -17,14 +16,16 @@ RUN wget -O /workspace/stable-diffusion-webui/models/ControlNet/control_v11p_sd1
 WORKDIR /workspace/stable-diffusion-webui/extensions
 RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git 
 
+#VAE
+RUN wget -O /workspace/stable-diffusion-webui/models/VAE/vae-ft-mse-840000-ema-pruned.safetensors "https://huggingface.co/Ryukz/Custom-SD-File-Requirements/resolve/main/vae-ft-mse-840000-ema-pruned.safetensors"
 
-WORKDIR /workspace/stable-diffusion-webui
-RUN git reset --hard a9eab236d7e8afa4d6205127904a385b2c43bb24
-
-
+#Embeddings
+RUN wget -O /workspace/stable-diffusion-webui/embeddings/bad_prompt_version2.pt "https://huggingface.co/Ryukz/Custom-SD-File-Requirements/resolve/main/bad_prompt_version2.pt"
+RUN wget -O /workspace/stable-diffusion-webui/embeddings/bad-hands-5.pt "https://huggingface.co/Ryukz/Custom-SD-File-Requirements/resolve/main/bad-hands-5.pt"
+RUN wget -O /workspace/stable-diffusion-webui/embeddings/ng_deepnegative_v1_64t.pt "https://huggingface.co/Ryukz/Custom-SD-File-Requirements/resolve/main/ng_deepnegative_v1_64t.pt"
+RUN wget -O /workspace/stable-diffusion-webui/embeddings/realisticvision-negative-embedding.pt "https://huggingface.co/Ryukz/Custom-SD-File-Requirements/resolve/main/realisticvision-negative-embedding.pt"
 
 WORKDIR /
-RUN pip install gradio==3.23
 RUN pip install -U xformers
 RUN pip install runpod
 RUN pip install azure-storage-blob
